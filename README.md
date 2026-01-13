@@ -1,99 +1,102 @@
 <img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=02A6F4&height=120&section=header"/>
 <h1 align="center">Embarcatech - Projeto Integrado - BitDogLab </h1>
 
-## Objetivo do Projeto
+## 🎯 Objetivos do Projeto
 
-Desenvolver um jogo interativo no microcontrolador RP2040 usando a placa BitDogLab, onde o jogador controla uma nave, que trata-se de um quadrado 8x8, e a partir do uso do joystick é possível coletar alvos (quadrado 8x8) e evitar obstáculos (quadrado 10x10). Ademais, tem-se o feedback visual a partir do display OLED, os LEDs RGB, a matriz de LED WS2812 e o buzzer, além da exibição da pontuação do jogador dentro do game e também os estados do jogo, como o menu inicial, a tela do jogo, os pontos, e o Game Over.
+O objetivo principal é demonstrar o uso do Watchdog para garantir que o sistema se recupere automaticamente de falhas de software (travamentos). O projeto implementa:
+1.  **Configuração do Watchdog** com timeout adequado.
+2.  **Alimentação (Feed)** periódica do timer durante a operação normal.
+3.  **Simulação de Falha** intencional para testar o mecanismo.
+4.  **Diagnóstico de Reset** para identificar se o reinício foi causado pelo WDT.
 
-## 🗒️ Lista de requisitos
+---
 
-- **Leitura analógica por meio do potenciômetro do joystick**: utilizando o conversor ADC do
-RP2040;
-- **Leitura de botões físicos (push-buttons)**: com tratamento de debounce, essencial para garantir a
-confiabilidade das entradas digitais;
-- **Utilização da matriz de LEDs, do LED RGB e do buzzer**: como saídas para feedback visual e
-sonoro;
-- **Exibição de informações em tempo real no display gráfico 128x64 (SSD1306)**: que se comunica
-com o RP2040 via interface I2C;
-- **Transmissão de dados e mensagens de depuração através da interface UART**: permitindo a
-visualização em um terminal serial no computador;
-- **Uso de interrupções**: Todas as funcionalidades relacionadas aos botões devem ser implementadas utilizando rotinas de interrupção (IRQ); 
-- **Debouncing**: É obrigatório implementar o tratamento do bouncing dos botões via software; 
-- **Estruturação do projeto no ambiente VS Code**: previamente configurado para o desenvolvimento
-com o RP2040.
+## 🐶 Implementação do Watchdog Timer
 
-## 🛠 Tecnologias
+O sistema foi programado para operar com um **timeout de 4 segundos** (4000ms). Durante o funcionamento normal do jogo, o Watchdog é alimentado (`watchdog_update`) dentro do loop principal.
 
-1. **Microcontrolador**: Raspberry Pi Pico W (na BitDogLab).
-2. **Display OLED SSD1306**: 128x64 pixels, conectado via I2C (GPIO 14 - SDA, GPIO 15 - SCL).
-3. **LEDs RGB**:
-- Verde: GPIO 11 (PWM).
-- Azul: GPIO 12 (PWM).
-- Vermelho: GPIO 13 (PWM).
-4. **Joystick**:
-- Eixo Y (VRY): GPIO 26 (ADC).
-- Eixo X (VRX): GPIO 27 (ADC, usado no modo Dados).
-- Botão (SW): GPIO 22 (interrupção).
-5. **Botões**:
-- Botão A: GPIO 5 (interrupção).
-- Botão B: GPIO 6 (interrupção).
-6. **Buzzer**: GPIO 10 (PWM).
-7. **Matriz de LEDs: WS2812** (GPIO 7).
-7. **Linguagem de Programação:** C  
-8. **Frameworks:** Pico SDK
+### ✅ Justificativa dos Requisitos
 
+Abaixo, detalhamos como cada requisito da tarefa foi atendido no código:
 
-## 🔧 Funcionalidades Implementadas:
+| Requisito | Implementação no Projeto |
+| :--- | :--- |
+| **Configurar e Operar** | O WDT é ativado com `watchdog_enable(4000, 1)`, definindo um tempo limite de 4 segundos, suficiente para cobrir a latência das tarefas do jogo sem disparos falsos. |
+| **Gerenciar o "Feed"** | A função `watchdog_update()` é chamada a cada iteração do loop principal (`while(true)`), garantindo que o sistema não reinicie enquanto o jogo estiver fluindo corretamente. |
+| **Validar a Resiliência** | Foi criado um mecanismo de teste no Menu Inicial. Ao segurar o **Botão do Joystick**, o código entra propositalmente em um loop infinito *sem* alimentar o WDT, forçando o estouro do temporizador. |
+| **Diagnosticar Resets** | Ao iniciar, o sistema verifica `watchdog_caused_reboot()`. Se verdadeiro, incrementa um contador salvo no registrador `scratch[0]` e exibe a mensagem **"WDT RESET [N]"** no display OLED, informando ao usuário que houve uma recuperação de falha. |
 
-**Funções dos Componentes**
-   
-- Display: Exibe o menu inicial e as telas de cada modo (JOGAR e PONTOS).
-- LEDs: Indicam estados (verde = ALVO, vermelho = OBSTÁCULO).
-- Matriz de LEDs: Exibe "V" (verde, alvo), "X" (vermelho, obstáculo), e "SETA" (azul, modo pontos).
-- Joystick: Controla a NAVE.
-- Botões: Navegam entre modos e telas.
-- Buzzer: Emite sons a depender de onde a NAVE atingir.
+---
 
-## 🔧 Fluxograma Geral:
+## 🧪 Como Testar o Watchdog (Guia Passo a Passo)
 
-- **Menu Inicial:** Exibe uma borda retangular ao redor do display, além do título "STARDOG" do jogo, e as opções "JOGAR: A" e "PONTOS: B". O jogador pode usar os botões A para iniciar o jogo ou B para ver pontuação máxima.
-- **Modo Jogo:** A nave (um quadrado 8x8 preenchido) é controlada pelo joystick, movendo-se proporcionalmente no display. O jogador coleta alvos (um quadrado 8x8 não preenchido/”em branco”), ganhando pontos, e evita obstáculos (um quadrado 10x10 preenchido) que se movem da direita pra esquerda com deslocamento vertical aleatório. Ademais, a colisão da nave com o alvo acende o LED verde e exibe "V" na matriz de LED, além de tocar um som no buzzer. De maneira análoga, a colisão da nave com o obstáculo acende o LED vermelho, exibindo "X" na matriz de LED, e toca um som no buzzer pausando o jogo. Por fim, o botão A pausa/continua.
-- **Modo Pontos:** Exibe a pontuação máxima que o jogador conseguir, acende LED azul, e mostra padrão uma "SETA" inclinada na matriz de LED. Caso o Botão B seja apertado, volta ao menu.
-- **Game Over:** Caso o joystick seja apertado, aciona o Game Over, que faz com que seja exibido uma mensagem de "GAME OVER" no display por 2 segundos, desligando o sistema. Por fim, caso seja apertado mais uma vez o joystick, o sistema religa novamente voltando ao menu inicial.
-- Pressão longa por 2.5s nos botões A ou B retorna ao menu, e as mensagens de depuração são enviadas via UART.
+Para verificar o funcionamento da proteção contra travamentos, siga este roteiro:
 
-## 🚀 Passos para Compilação e Upload  
+1.  **Boot Normal:**
+    * Ligue a placa BitDogLab ou reinicie-a.
+    * No **Menu Inicial** (tela com título STARDOG), observe no rodapé a mensagem: **"BOOT NORMAL"**.
 
-1. **Clonar o repositório** 
+2.  **Simular o Travamento:**
+    * Ainda no Menu Inicial, pressione e segure o **Botão do Joystick (SW/Pino 22)**.
+    * O sistema simulará um erro crítico:
+        * O display exibirá: **"SIMULANDO TRAVAMENTO"**.
+        * O **LED Vermelho** piscará rapidamente.
+        * O sistema parará de responder (loop infinito).
+    * *Nota: Neste momento, o código para de alimentar o Watchdog propositalmente.*
 
-- sh
-- git clone seu repositorio
+3.  **Observar a Recuperação:**
+    * Aguarde aproximadamente **4 segundos**.
+    * O Watchdog detectará a falta de resposta e reiniciará o microcontrolador automaticamente.
 
+4.  **Verificar o Diagnóstico:**
+    * Assim que o sistema reiniciar, olhe novamente para o Menu Inicial.
+    * A mensagem no rodapé terá mudado para: **"WDT RESET 1"** (ou o número de vezes que você testou).
+    * Isso confirma que o sistema identificou a falha e se recuperou com sucesso.
 
-2. **Configurar e compilar o projeto**  
+---
 
-`mkdir build && cd build`
-`cmake ..`
-`make`
+## 🎮 Sobre o Projeto Base (StarDog)
 
-3. **Transferir o firmware para a placa**
+O "StarDog" é um jogo interativo desenvolvido para a placa BitDogLab. O jogador controla uma nave (quadrado 8x8) usando o joystick, com o objetivo de coletar alvos e evitar obstáculos.
 
-- Conectar a placa BitDogLab ao computador
-- Copiar o arquivo .uf2 gerado para o drive da placa
+### Tecnologias e Periféricos Utilizados
+* **Microcontrolador:** Raspberry Pi Pico W (RP2040).
+* **Display OLED SSD1306 (I2C):** Exibe o jogo e status do Watchdog.
+* **Joystick (ADC):** Controla a nave e aciona a simulação de falha (botão SW).
+* **LED RGB:** Feedback visual (Verde = Alvo, Vermelho = Colisão/Erro WDT).
+* **Matriz de LEDs WS2812:** Exibe ícones de status (V, X, Seta).
+* **Buzzer (PWM):** Feedback sonoro.
+* **Botões A e B (IRQ):** Controle de fluxo do jogo.
 
-4. **Testar o projeto**
+### Funcionalidades do Jogo
+* **Menu Inicial:** Seleção de modos e exibição do status de boot (Normal ou WDT).
+* **Modo Jogo:** Controle da nave, pontuação e detecção de colisão.
+* **Modo Pontos:** Exibição da pontuação máxima (High Score).
+* **Game Over:** Tela de fim de jogo.
 
-🛠🔧🛠🔧🛠🔧
+---
 
+## 🚀 Compilação e Upload
 
-## 🎥 Demonstração: 
+1.  **Clonar o repositório:**
+    ```sh
+    git clone <link-do-seu-repositorio>
+    ```
 
-- Para ver o funcionamento do projeto, acesse o vídeo de demonstração gravado por José Vinicius em: https://youtu.be/UlLR2-UypfE
+2.  **Configurar e compilar:**
+    Certifique-se de ter o Pico SDK configurado.
+    ```sh
+    mkdir build && cd build
+    cmake ..
+    make
+    ```
+
+3.  **Transferir o firmware:**
+    * Conecte a placa BitDogLab ao computador segurando o botão BOOTSEL.
+    * Copie o arquivo `.uf2` gerado na pasta `build` para o drive `RPI-RP2`.
+
+---
 
 ## 💻 Desenvolvedor
- 
-<table>
-  <tr>
-    <td align="center"><img style="" src="https://avatars.githubusercontent.com/u/191687774?v=4" width="100px;" alt=""/><br /><sub><b> José Vinicius </b></sub></a><br />👨‍💻</a></td>
-  </tr>
-</table>
+
+**José Vinicius**
