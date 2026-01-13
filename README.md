@@ -102,4 +102,4 @@ O "StarDog" é um jogo interativo desenvolvido para a placa BitDogLab. O jogador
 
 ## 🎥 Demonstração: 
 
-- Para ver o funcionamento do projeto, acesse o vídeo de demonstração gravado por José Vinicius em: https://youtu.be/UlLR2-UypfE
+- Para ver o funcionamento do projeto, acesse o vídeo de demonstração em: 
