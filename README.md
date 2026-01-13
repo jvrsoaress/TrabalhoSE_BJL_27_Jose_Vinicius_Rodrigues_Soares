@@ -71,7 +71,7 @@ O "StarDog" é um jogo interativo desenvolvido para a placa BitDogLab. O jogador
 ### Funcionalidades do Jogo
 * **Menu Inicial:** Seleção de modos e exibição do status de boot (Normal ou WDT).
 * **Modo Jogo:** Controle da nave, pontuação e detecção de colisão.
-* **Modo Pontos:** Exibição da pontuação máxima (High Score).
+* **Modo Pontos:** Exibição da pontuação máxima.
 * **Game Over:** Tela de fim de jogo.
 
 ---
@@ -80,7 +80,7 @@ O "StarDog" é um jogo interativo desenvolvido para a placa BitDogLab. O jogador
 
 1.  **Clonar o repositório:**
     ```sh
-    git clone <link-do-seu-repositorio>
+    git clone 
     ```
 
 2.  **Configurar e compilar:**
