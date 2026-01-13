@@ -28,16 +28,16 @@ Abaixo, detalhamos como cada requisito da tarefa foi atendido no código:
 
 ---
 
-## 🧪 Como Testar o Watchdog (Guia Passo a Passo)
+## 🧪 Como Testar o Watchdog 
 
 Para verificar o funcionamento da proteção contra travamentos, siga este roteiro:
 
 1.  **Boot Normal:**
     * Ligue a placa BitDogLab ou reinicie-a.
-    * No **Menu Inicial** (tela com título STARDOG), observe no rodapé a mensagem: **"BOOT NORMAL"**.
+    * No **Menu Inicial**, observe no rodapé a mensagem: **"BOOT NORMAL"**.
 
 2.  **Simular o Travamento:**
-    * Ainda no Menu Inicial, pressione e segure o **Botão do Joystick (SW/Pino 22)**.
+    * Ainda no Menu Inicial, pressione e segure o **Botão do Joystick**.
     * O sistema simulará um erro crítico:
         * O display exibirá: **"SIMULANDO TRAVAMENTO"**.
         * O **LED Vermelho** piscará rapidamente.
